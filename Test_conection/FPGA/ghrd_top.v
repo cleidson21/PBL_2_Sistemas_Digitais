@@ -330,10 +330,15 @@ soc_system u0 (
 // Instanciar o modulo da Unidade de Controle
 ControlUnit contronunit_inst (
 	.clk(CLOCK_50),
-	.reset(hps_fpga_reset_n),
+	.reset(~KEY[0]),
 	.data_in(DATA_IN),
-	.data_out(DATA_OUT)
+	.data_out(DATA_OUT),
+	.debug_state(LEDR[3:0]),
+	.start(LEDR[7]),
+	.entrada(LEDR[8]),
+	.saida(LEDR[9])
 );
+
 
 // Source/Probe megawizard instance
 hps_reset hps_reset_inst (
