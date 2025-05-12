@@ -11,14 +11,14 @@
 // Bits de controle (ajustados para o seu modelo)
 #define START_PULSE_BIT (1 << 30)  // data_in[30]
 #define HPS_CONTROL_BIT  (1 << 31)  // data_in[31] (HPS -> FPGA)
-#define FPGA_ACK_BIT     (1 << 30)  // data_out[30] (FPGA -> HPS)
+#define FPGA_ACK_BIT     (1 << 31)  // data_out[30] (FPGA -> HPS)
 
 #define TIMEOUT_US 1000000  // 1 segundo
 
 void debug_print(const char* message, volatile uint32_t* data_in, volatile uint32_t* data_out) {
     printf("[DEBUG] %s\n", message);
     printf("  data_in:  0x%08X (HPS_CTRL: %d)\n", *data_in, (*data_in >> 31) & 1);
-    printf("  data_out: 0x%08X (FPGA_ACK: %d)\n", *data_out, (*data_out >> 30) & 1);
+    printf("  data_out: 0x%08X (FPGA_ACK: %d)\n", *data_out, (*data_out >> 31) & 1);
 }
 
 void start_operation(volatile uint32_t* data_in) {
@@ -32,7 +32,7 @@ void handshake_send(volatile uint32_t* data_in, volatile uint32_t* data_out, uin
     
     // Passo 1: Garante que FPGA está no estado inicial
     *data_in = 0; // Clear todos os bits
-    usleep(10);   // Espera 10 μs 
+    usleep(100);   // Espera 100 μs 
 
     // Passo 2: HPS envia dado com controle = 1
     *data_in = HPS_CONTROL_BIT | value;
@@ -132,6 +132,9 @@ int main() {
     
     data_in = (volatile uint32_t*)(virtual_base + DATA_IN_BASE);
     data_out = (volatile uint32_t*)(virtual_base + DATA_OUT_BASE);
+
+    *data_in = 0;
+    *data_out = 0;
     
     printf("[INIT] Ponteiros configurados:\n");
     printf("  data_in:  %p\n", data_in);
