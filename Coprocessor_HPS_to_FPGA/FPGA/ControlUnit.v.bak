@@ -1,0 +1,188 @@
+module ControlUnit (
+    input  wire        clk,
+    input  wire        reset,
+    input  wire [31:0] avs_s0_writedata,
+    input  wire        avs_s0_write,
+    input  wire        avs_s0_read,
+    input  wire [7:0]  avs_s0_address,
+    output reg         avs_s0_waitrequest,
+    output reg  [31:0] avs_s0_readdata,
+    output reg         done_flag
+);
+
+    // Parâmetros de endereçamento (compatíveis com o assembly)
+    localparam OPCODE_ADDR   = 8'hC0;
+    localparam SIZE_ADDR     = 8'hC4;
+    localparam SCALAR_ADDR   = 8'hC8;
+    localparam START_ADDR    = 8'hF8;
+    localparam STATUS_ADDR   = 8'hB0;
+    localparam RESULT_BASE   = 8'h00;
+    localparam OVERFLOW_ADDR = 8'h64; // 25*4 = 0x64
+
+    // Registros internos
+    reg signed [7:0] matrix_a [0:24];
+    reg signed [7:0] matrix_b [0:24];
+    reg signed [7:0] matrix_result [0:24];
+    reg [199:0] matrix_a_flat, matrix_b_flat;
+    wire [199:0] matrix_out;
+    reg [2:0] op_code_reg;
+    reg [1:0] matrix_size_reg;
+    reg [7:0] scalar_reg;
+    reg overflow_reg;
+    reg start_reg;
+    
+    // Sinais de controle
+    reg processing = 0;
+    wire process_start;
+    wire process_done;
+    wire overflow;
+    
+    // Máquina de estados
+    reg [1:0] state;
+    localparam IDLE = 2'b00;
+    localparam PROCESSING = 2'b01;
+    localparam DONE = 2'b10;
+
+    // Lógica de waitrequest
+    always @(*) begin
+        // Sinaliza waitrequest durante processamento ou para endereços inválidos
+        avs_s0_waitrequest = (state != IDLE) || 
+                           ((avs_s0_address >= 8'hC0) && 
+                            (avs_s0_address != OPCODE_ADDR) &&
+                            (avs_s0_address != SIZE_ADDR) &&
+                            (avs_s0_address != SCALAR_ADDR) &&
+                            (avs_s0_address != START_ADDR) &&
+                            (avs_s0_address != STATUS_ADDR));
+    end
+	
+	integer i;
+    // Escrita nos registros
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            for (i = 0; i < 25; i = i + 1) begin
+                matrix_a[i] <= 0;
+                matrix_b[i] <= 0;
+            end
+            op_code_reg <= 0;
+            matrix_size_reg <= 0;
+            scalar_reg <= 0;
+            start_reg <= 0;
+        end else if (avs_s0_write && !avs_s0_waitrequest) begin
+            case (avs_s0_address)
+                // Escrita de dados das matrizes (16 bits: B[15:8] + A[7:0])
+                RESULT_BASE: begin
+                    for (i = 0; i < 25; i = i + 1) begin
+                        if (avs_s0_address == i) begin
+                            matrix_a[i] <= avs_s0_writedata[7:0];
+                            matrix_b[i] <= avs_s0_writedata[15:8];
+                        end
+                    end
+                end
+                OPCODE_ADDR:   op_code_reg <= avs_s0_writedata[2:0];
+                SIZE_ADDR:     matrix_size_reg <= avs_s0_writedata[1:0];
+                SCALAR_ADDR:   scalar_reg <= avs_s0_writedata[7:0];
+                START_ADDR:    start_reg <= avs_s0_writedata[0];
+                default: ; // Nada a fazer
+            endcase
+        end
+    end
+
+    // Leitura dos registros
+    always @(posedge clk) begin
+        if (reset) begin
+            avs_s0_readdata <= 0;
+        end else if (avs_s0_read && !avs_s0_waitrequest) begin
+            case (avs_s0_address)
+                // Leitura dos resultados
+                RESULT_BASE: begin
+                    for (i = 0; i < 25; i = i + 1) begin
+                        if (avs_s0_address == i) begin
+                            avs_s0_readdata <= {24'b0, matrix_result[i]};
+                        end
+                    end
+                end
+                STATUS_ADDR:   avs_s0_readdata <= {31'b0, process_done};
+                OVERFLOW_ADDR: avs_s0_readdata <= {31'b0, overflow_reg};
+                default:       avs_s0_readdata <= 0;
+            endcase
+        end
+    end
+
+    // Detecção de borda de subida do start
+    reg start_prev;
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            start_prev <= 0;
+        end else begin
+            start_prev <= start_reg;
+        end
+    end
+    
+    assign process_start = start_reg && !start_prev;
+
+    // Máquina de estados principal
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            state <= IDLE;
+            done_flag <= 0;
+        end else begin
+            case (state)
+                IDLE: begin
+                    done_flag <= 0;
+                    if (process_start) begin
+                        state <= PROCESSING;
+                    end
+                end
+                
+                PROCESSING: begin
+                    if (process_done) begin
+                        state <= DONE;
+                        done_flag <= 1;
+                    end
+                end
+                
+                DONE: begin
+                    state <= IDLE;
+                    done_flag <= 0;
+                end
+            endcase
+        end
+    end
+
+    // Instância do coprocessador matricial
+    Coprocessor matrix_coprocessor (
+	     .op_code(op_code_reg),
+		  .matrix_size(matrix_size_reg),
+        .matrix_a(matrix_a_flat),
+        .matrix_b(matrix_b_flat),
+        .scalar(scalar_reg),
+        .result(matrix_out),
+        .overflow(overflow),
+        .done(process_done)
+    );
+
+    // Registro do overflow
+    always @(posedge clk) begin
+        if (process_done) begin
+            overflow_reg <= overflow;
+        end
+    end
+
+     // Atualização do resultado
+    always @(posedge clk) begin
+        if (process_done) begin
+            for (i = 0; i < 25; i = i + 1)
+                matrix_result[i] <= matrix_out[(i*8) +: 8];
+            overflow_reg <= overflow;
+        end
+    end
+
+    // Flatten das matrizes
+    always @(*) begin
+        for (i = 0; i < 25; i = i + 1) begin
+            matrix_a_flat[(i*8) +: 8] = matrix_a[i];
+            matrix_b_flat[(i*8) +: 8] = matrix_b[i];
+        end
+    end
+
+endmodule

@@ -1,0 +1,61 @@
+module MatrixSubtractor (
+    input wire clk,
+    input wire rst,
+    input wire start,              // Sinal para iniciar a subtração
+    input wire [199:0] matrix_A,   // Matriz A (25 elementos de 8 bits com sinal)
+    input wire [199:0] matrix_B,   // Matriz B (25 elementos de 8 bits com sinal)
+    output wire [199:0] result_out, // Resultado da subtração (25 elementos de 8 bits)
+    output reg overflow,            // Indica se houve overflow
+    output reg done                 // Indica quando a operação termina
+);
+
+    // Vetores para armazenar a subtração e overflow
+    wire [8:0] diff [0:24];          // Subtração com 9 bits para detectar overflow
+    wire [7:0] signed_A [0:24];      // Matriz A
+    wire [7:0] signed_B [0:24];      // Matriz B
+    wire overflow_check [0:24];      // Verificação de overflow
+    reg [199:0] result_reg;          // Registrador para armazenar o resultado final
+    
+    assign result_out = result_reg;  // Saída conectada ao registrador
+
+    genvar i; // Definição do índice para o 'generate'
+    integer j; // Índice para loops no always
+
+    // Atribui os elementos da matriz A e B, separando os blocos de 8 bits
+    generate
+        for (i = 0; i < 25; i = i + 1) begin : matrix_assign
+            assign signed_A[i] = matrix_A[i*8 +: 8]; // Atribui cada bloco de 8 bits de A
+            assign signed_B[i] = matrix_B[i*8 +: 8]; // Atribui cada bloco de 8 bits de B
+        end
+    endgenerate
+
+    // Realiza a subtração dos elementos da matriz e detecta overflow
+    generate
+        for (i = 0; i < 25; i = i + 1) begin : diff_and_check
+            assign diff[i] = signed_A[i] - signed_B[i]; // Subtração A - B (9 bits para captura de overflow)
+
+            // Verificação de overflow: se os sinais de A e B forem diferentes e o resultado mudar de sinal
+            assign overflow_check[i] = (signed_A[i][7] != signed_B[i][7]) && (diff[i][8] != signed_A[i][7]);
+        end
+    endgenerate
+
+    // Geração do resultado e controle do overflow
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            overflow <= 0;          // Resetando overflow
+            done <= 0;              // Resetando done
+            result_reg <= 0;        // Resetando resultado
+        end else if (start) begin
+            overflow <= 0; // Limpa o overflow
+            done <= 1;      // Marca a operação como terminada
+
+            // Atribui a subtração (apenas os 8 bits menos significativos de cada subtração)
+            for (j = 0; j < 25; j = j + 1) begin
+                result_reg[j*8 +: 8] <= diff[j][7:0];  // Armazena o resultado de cada subtração
+                if (overflow_check[j]) begin
+                    overflow <= 1;  // Se houver overflow, marca o sinal de overflow
+                end
+            end
+        end
+    end
+endmodule

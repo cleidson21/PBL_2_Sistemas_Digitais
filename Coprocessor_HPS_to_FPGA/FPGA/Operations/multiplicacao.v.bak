@@ -1,0 +1,62 @@
+
+
+module multiplicacao_combinacional( 
+    input wire [199:0] matriz_a, matriz_b, 
+    output wire [199:0] matriz_result 
+);
+    
+    wire [7:0] result [0:24];  
+    wire [7:0] matriz_A [0:4][0:4];   
+    wire [7:0] matriz_B [0:4][0:4];
+    
+    genvar i, j ;
+    
+    // Converter vetor de 200 bits para matriz 5x5 (cada elemento com 8 bits)
+    generate
+        for (i = 0; i < 5; i = i + 1) begin : unpack_a
+            for (j = 0; j < 5; j = j + 1) begin : unpack_b 
+                assign matriz_A[i][j] = matriz_a[((i * 5 + j) * 8) +: 8];
+                assign matriz_B[i][j] = matriz_b[((i * 5 + j) * 8) +: 8]; 
+            end
+        end
+    endgenerate
+	 
+	 
+    
+    // Multiplicação de matrizes
+    generate
+        for (i = 0; i < 5; i = i + 1) begin : linha
+		  
+            for (j = 0; j < 5; j = j + 1) begin : coluna 
+				
+                assign result[(i * 5) + j] = matriz_A[i][0] * matriz_B[0][j] +
+                                             matriz_A[i][1] * matriz_B[1][j] +
+                                             matriz_A[i][2] * matriz_B[2][j] +
+                                             matriz_A[i][3] * matriz_B[3][j] +
+                                             matriz_A[i][4] * matriz_B[4][j];
+            end
+        end
+    endgenerate 
+	 
+	wire global_overflow;
+	wire [25-1:0] overflow_bits;
+
+	generate
+		 for (i = 0; i < 25; i = i + 1) begin : detecta_overflow
+			  assign overflow_bits[i] = |result[i][15:8];
+		 end
+	endgenerate
+
+	assign global_overflow = |overflow_bits;
+
+	 
+    // Converter matriz resultado de volta para vetor de 200 bits
+    generate
+    for (i = 0; i < 5; i = i + 1) begin : pack_result_row
+        for (j = 0; j < 5; j = j + 1) begin : pack_result_col
+            assign matriz_result[((i * 5 + j) * 8) +: 8] = result[i * 5 + j];  
+        end
+    end
+	endgenerate
+
+endmodule
