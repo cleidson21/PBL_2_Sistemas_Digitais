@@ -1,8 +1,8 @@
 module multiplicacao_num_matriz (
-    input [199:0] matriz_A,           // Matriz A de entrada (25 elementos de 8 bits)
+    input [199:0] matriz_A,           			// Matriz A de entrada (25 elementos de 8 bits)
     input signed [7:0] num_inteiro,          // Número escalar (8 bits)
     input [1:0] matrix_size,                 // Tamanho da matriz (2x2, 3x3, 4x4, 5x5)
-    output reg [199:0] nova_matriz_A, // Matriz resultante da multiplicação
+    output reg [199:0] nova_matriz_A, 			// Matriz resultante da multiplicação
     output reg overflow_flag                 // Sinal geral de overflow
 );
 

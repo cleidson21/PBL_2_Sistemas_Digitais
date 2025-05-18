@@ -80,11 +80,11 @@
 					end 
 				end
 
-				RECEIVING: begin
-					op_code     <= opcode_in;
-					matrix_size <= size_in;
-					scalar      <= scalar_in;
+				RECEIVING: begin 
 					if (hps_ready_edge) begin
+						op_code     <= opcode_in;
+						matrix_size <= size_in;
+						scalar      <= scalar_in;
 						matrix_a[index] <= val_a;
 						matrix_b[index] <= val_b;
 						index <= index + 1;
@@ -125,7 +125,7 @@
 		if (reset) begin
 			data_out <= 32'b0;
 		end else begin
-			data_out <= {fpga_wait, 23'b0, (state == SENDING) ? matrix_result[index-1] : 8'b0};
+			data_out <= {fpga_wait, overflow_flag, 22'b0, (state == SENDING) ? matrix_result[index-1] : 8'b0};
 		end
 	end
 

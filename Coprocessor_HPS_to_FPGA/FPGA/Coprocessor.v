@@ -1,7 +1,7 @@
 module Coprocessor (
-    input [2:0] op_code,                   // Código da operação a ser executada (adição, subtração, etc.)
-    input [1:0] matrix_size,               // Define o tamanho da matriz (2x2, 3x3, 4x4, 5x5)
-    input [199:0] matrix_a,            			 // Matriz A de entrada
+    input [2:0] op_code,                   		// Código da operação a ser executada (adição, subtração, etc.)
+    input [1:0] matrix_size,               		// Define o tamanho da matriz (2x2, 3x3, 4x4, 5x5)
+    input [199:0] matrix_a,            			// Matriz A de entrada
     input [199:0] matrix_b,              			// Matriz B de entrada
     input signed [7:0] scalar,                  // Valor escalar para multiplicação
     output reg overflow,                        // Sinaliza overflow em operações
@@ -11,7 +11,7 @@ module Coprocessor (
 
     // Resultados intermediários para cada operação
     wire [199:0] result_add, result_sub, result_transpose, result_opposite, result_mult_esc, result_matrix_mult;
-    wire overflow_add, overflow_sub, overflow_matrix_mult, overflow_determinant;
+    wire overflow_add, overflow_sub, overflow_matrix_mult, overflow_scalar, overflow_determinant;
     wire signed [7:0] determinant_result;      
     wire determinant_done;  
 
@@ -48,7 +48,8 @@ module Coprocessor (
         .matriz_A(matrix_a),                  
         .matrix_size(matrix_size),            
         .num_inteiro(scalar),                 
-        .nova_matriz_A(result_mult_esc)       // Resultado da multiplicação escalar
+        .nova_matriz_A(result_mult_esc),       // Resultado da multiplicação escalar
+		  .overflow_flag(overflow_scalar)
     );
 
     // Módulo sequencial para multiplicação de matrizes
@@ -73,37 +74,38 @@ module Coprocessor (
 		case (op_code)
 			3'b000: begin 
 				result_final = result_add;            // Resultado da adição de matrizes
-				overflow = overflow_add;              // Propaga o sinal de overflow da adição
-				process_Done = 1;                     // Indica que o processamento está concluído
+				overflow = overflow_add;              
+				process_Done = 1;                     
 			end
 			3'b001: begin 
 				result_final = result_sub;            // Resultado da subtração de matrizes
-				overflow = overflow_sub;              // Propaga o sinal de overflow da subtração
-				process_Done = 1;                     // Indica que o processamento está concluído
+				overflow = overflow_sub;              
+				process_Done = 1;                     
 			end
 			3'b010: begin
 				result_final = result_matrix_mult;   // Resultado da multiplicação de matrizes
-				overflow = overflow_matrix_mult;     // Propaga o sinal de overflow da multiplicação de matrizes
-				process_Done = 1;                    // Indica que o processamento foi concluído
+				overflow = overflow_matrix_mult;     
+				process_Done = 1;
+			end
 			3'b011: begin 
 				result_final = result_mult_esc;       // Resultado da multiplicação escalar
-				overflow = 0;                         // Não há overflow na multiplicação escalar
-				process_Done = 1;                     // Indica que o processamento está concluído
+				overflow = overflow_scalar;                         
+				process_Done = 1;                     
 			end
 			3'b100: begin 
 				result_final = determinant_result;    // Zera os bits superiores no cálculo do determinante
 				overflow = overflow_determinant;    
-				process_Done <= determinant_done;      // Indica que o processamento foi concluído
+				process_Done <= determinant_done;     
 			end
 			3'b101: begin
 				result_final = result_transpose;      // Resultado da transposição da matriz
-				overflow = 0;                         // Não há overflow em transposição
-				process_Done = 1;                     // Indica que o processamento está concluído
+				overflow = 0;                         
+				process_Done = 1;                     
 			end
 			3'b110: begin
 				result_final = result_opposite;       // Resultado da matriz oposta
-				overflow = 0;                         // Não há overflow em operação de oposto
-				process_Done = 1;                     // Indica que o processamento está concluído
+				overflow = 0;                         
+				process_Done = 1;                     
 			end
 			default: begin 
 				result_final = 0;                       // Caso padrão, limpa o resultado
