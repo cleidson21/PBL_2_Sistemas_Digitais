@@ -20,7 +20,7 @@ O objetivo é permitir que o HPS delegue operações com matrizes (como soma, su
 
 - O código da biblioteca deve ser escrito em linguagem Assembly
 - A biblioteca deve conter as funções essenciais para que seja possível utilizar as operações matriciais implementadas no coprocessador
-- A biblioteca deve seguir as recomendações descritas em: [https://github.com/MaJerle/c-code-style](A biblioteca deve seguir as recomendações descritas em: https://github.com/MaJerle/c-code-style)
+- A biblioteca deve seguir as recomendações descritas em: [https://github.com/MaJerle/c-code-style](https://github.com/MaJerle/c-code-style)
 
 ## Recursos Utilizados
 
@@ -43,11 +43,12 @@ A **FPGA DE1-SoC** foi a plataforma utilizada para a implementação e testes do
 
 Para mais informações técnicas, consulte o [Manual da Placa DE1-SoC (PDF)](https://drive.google.com/file/d/1dBaSfXi4GcrSZ0JlzRh5iixaWmq0go2j/view).
 
-## DESENVOLVIMENTO
+## Desenvolvimento
 
 *Explicar o projeto de maneira detalhada nessa seção*
 
 ## Referências
 
 - [Manual da Placa DE1-SoC (PDF)](https://drive.google.com/file/d/1dBaSfXi4GcrSZ0JlzRh5iixaWmq0go2j/view)
+- [Manual do ARMv7-A](https://developer.arm.com/documentation/ddi0406/latest/).
 - [Quartus Prime - Documentação Oficial](https://www.intel.com/content/www/us/en/software/programmable/quartus-prime/overview.html)
