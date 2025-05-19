@@ -50,5 +50,5 @@ Para mais informações técnicas, consulte o [Manual da Placa DE1-SoC (PDF)](ht
 ## Referências
 
 - [Manual da Placa DE1-SoC (PDF)](https://drive.google.com/file/d/1dBaSfXi4GcrSZ0JlzRh5iixaWmq0go2j/view)
-- [Manual do ARMv7-A](https://developer.arm.com/documentation/ddi0406/latest/).
+- [Manual do ARMv7-A](https://developer.arm.com/documentation/ddi0406/latest/)
 - [Quartus Prime - Documentação Oficial](https://www.intel.com/content/www/us/en/software/programmable/quartus-prime/overview.html)
