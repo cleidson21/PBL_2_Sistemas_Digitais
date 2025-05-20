@@ -9,15 +9,17 @@
 #define LW_BRIDGE_SPAN 0x00005000
 
 // Bits de controle (ajustados para o seu modelo)
-#define OPCODE_BITS      (2 << 16)  // data_in[18:16]
+#define OPCODE_BITS      (3 << 16)  // data_in[18:16]
 #define SIZE_BITS        (3 << 19)  // data_in[21:19]
-#define SCALAR_BITS      (3 << 21)  // data_in[28:21]
+#define SCALAR_BITS      (11 << 21)  // data_in[28:21]
 #define RESET_BIT        (1 << 29)  // data_in[29]
 #define START_PULSE_BIT  (1 << 30)  // data_in[30]
 #define HPS_CONTROL_BIT  (1 << 31)  // data_in[31] (HPS -> FPGA)
-#define FPGA_ACK_BIT     (1 << 31)  // data_out[30] (FPGA -> HPS)
+#define FPGA_ACK_BIT     (1 << 31)  // data_out[31] (FPGA -> HPS)
 
 #define TIMEOUT_US 1000000  // 1 segundo
+
+uint8_t overflow = 0; 
 
 void debug_print(const char* message, volatile uint32_t* data_in, volatile uint32_t* data_out) {
     printf("[DEBUG] %s\n", message);
@@ -77,6 +79,7 @@ uint8_t handshake_receive(volatile uint32_t* data_in, volatile uint32_t* data_ou
 
     // Passo 2: HPS sinaliza prontidão (HPS_CONTROL=1)
     *data_in = HPS_CONTROL_BIT;
+    debug_print("HPS -> FPGA: Dado + CTRL=1", data_in, data_out);
 
     // Passo 3: Aguarda FPGA_ACK=1
     uint32_t timeout = 0;
@@ -88,6 +91,7 @@ uint8_t handshake_receive(volatile uint32_t* data_in, volatile uint32_t* data_ou
         usleep(1);
     }
     uint8_t value = *data_out & 0xFF;
+    overflow = (*data_out >> 30) & 0x1;
 
     // Passo 4: HPS confirma recebimento (HPS_CONTROL=0)
     *data_in = 0;
@@ -161,7 +165,7 @@ int main() {
     
     int8_t res[25];
     printf("\n[TESTE] Recebendo resultados com handshake...\n");
-    for( i = 0; i < 25; i++) {
+    for(i = 0; i < 25; i++) {
         res[i] = handshake_receive(data_in, data_out);
     }
     printf("\nMatriz A \n");
@@ -197,7 +201,9 @@ int main() {
         }
     printf("\n");
 
-    printf("\n[HS] Recebimento completo!\n");
+    printf("\nOverflow: %s\n", (overflow & 0x1) ? "SIM" : "NÃO");
+
+    printf("\n[HS] Recebimento completo!\n");*/
     
     // Libera recursos
     printf("\n[FIM] Liberando recursos...\n");

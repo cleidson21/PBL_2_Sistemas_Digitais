@@ -6,10 +6,17 @@
 #define MATRIX_SIZE 25
 
 void print_matrix(const char* label, const int8_t* matrix, int size) {
+    uint8_t n = size + 2;
+    uint8_t size_total = n * n;
+    int i;
     printf("\n%s:\n", label);
-    for (int i = 0; i < size; ++i) {
-        printf("%4d", matrix[i]);
-        if ((i + 1) % 5 == 0) printf("\n");
+    for (i = 0; i < size_total; i++) {
+        if (i % n == 0) 
+            printf("\n| ");
+        printf("%02d", matrix[i]);
+        if (i % n != n - 1) 
+            printf(", ");
+        else printf(" |");
     }
 }
 
@@ -45,8 +52,17 @@ int main() {
     int8_t matrix_result[MATRIX_SIZE] = {0};
     uint8_t overflow_flag = 0;
     uint32_t op_code = 0;
-    uint32_t matrix_size = 2;
+    uint32_t matrix_size = 3;
     uint32_t scalar = 3;
+
+    struct Params params = {
+        .a = matrix_a,
+        .b = matrix_b,
+        .opcode = op_code,
+        .size = matrix_size,
+        .scalar = scalar
+    };
+    
 
     if (validate_operation(op_code, matrix_size) != HW_SUCCESS) {
         return EXIT_FAILURE;
@@ -59,7 +75,7 @@ int main() {
     }
 
     printf("Enviando dados...\n");
-    if (send_all_data(matrix_a, matrix_b, op_code, matrix_size, scalar) != HW_SUCCESS) {
+    if (send_all_data(&params) != HW_SUCCESS) {
         fprintf(stderr, "Falha no envio\n");
         close_hw_access();
         return EXIT_FAILURE;
@@ -72,9 +88,10 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    print_matrix("Matriz A", matrix_a, MATRIX_SIZE);
-    print_matrix("Matriz B", matrix_b, MATRIX_SIZE);
-    print_matrix("Resultado", matrix_result, MATRIX_SIZE);
+    // Area de Visualização de resultados
+    print_matrix("Matriz A", matrix_a, matrix_size);
+    print_matrix("Matriz B", matrix_b, matrix_size);
+    print_matrix("Resultado", matrix_result, matrix_size);
     printf("\nOverflow: %s\n", (overflow_flag & 0x1) ? "SIM" : "NÃO");
 
     close_hw_access();
