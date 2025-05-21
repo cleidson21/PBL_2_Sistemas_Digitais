@@ -13,7 +13,7 @@ void print_matrix(const char* label, const int8_t* matrix, int size) {
     for (i = 0; i < size_total; i++) {
         if (i % n == 0) 
             printf("\n| ");
-        printf("%02d", matrix[i]);
+        printf("%3d", matrix[i]);  // Aumentei o espaço para melhor visualização
         if (i % n != n - 1) 
             printf(", ");
         else printf(" |");
@@ -49,11 +49,13 @@ int main() {
         1, 1, 1, 1, 1,
         1, 1, 1, 1, 1
     };
+    
+    // Buffer para armazenar o resultado da operação
     int8_t matrix_result[MATRIX_SIZE] = {0};
     uint8_t overflow_flag = 0;
-    uint32_t op_code = 0;
-    uint32_t matrix_size = 3;
-    uint32_t scalar = 3;
+    uint32_t op_code = 2;
+    uint32_t matrix_size = 0;
+    uint32_t scalar = 11;
 
     struct Params params = {
         .a = matrix_a,
@@ -63,36 +65,47 @@ int main() {
         .scalar = scalar
     };
     
-
+    // Valida os parâmetros antes de iniciar a comunicação
     if (validate_operation(op_code, matrix_size) != HW_SUCCESS) {
         return EXIT_FAILURE;
     }
 
     printf("Inicializando hardware...\n");
     if (init_hw_access() != HW_SUCCESS) {
-        fprintf(stderr, "Falha na inicialização\n");
+        fprintf(stderr, "Falha na inicialização do hardware\n");
         return EXIT_FAILURE;
     }
 
-    printf("Enviando dados...\n");
+    printf("Enviando dados para a FPGA...\n");
     if (send_all_data(&params) != HW_SUCCESS) {
-        fprintf(stderr, "Falha no envio\n");
+        fprintf(stderr, "Falha no envio de dados para a FPGA\n");
         close_hw_access();
         return EXIT_FAILURE;
     }
 
-    printf("Processando (aguardando FPGA)...\n");  // Removido o delay ativo
+    printf("Processando (aguardando FPGA concluir a operação)...\n");
+    
+    // Limpa o buffer de resultado antes de receber novos dados
+    int i;
+    for (i = 0; i < MATRIX_SIZE; i++) {
+        matrix_result[i] = 0;
+    }
+    overflow_flag = 0;
+    
+    // Recebe os resultados da FPGA (ciclo de 25 números + flag de overflow)
     if (read_all_results(matrix_result, &overflow_flag) != HW_SUCCESS) {
-        fprintf(stderr, "Falha na leitura\n");
+        fprintf(stderr, "Falha na leitura dos resultados da FPGA\n");
         close_hw_access();
         return EXIT_FAILURE;
     }
 
-    // Area de Visualização de resultados
-    print_matrix("Matriz A", matrix_a, matrix_size);
-    print_matrix("Matriz B", matrix_b, matrix_size);
-    print_matrix("Resultado", matrix_result, matrix_size);
-    printf("\nOverflow: %s\n", (overflow_flag & 0x1) ? "SIM" : "NÃO");
+    printf("Recebimento dos dados da FPGA concluído com sucesso!\n");
+
+    // Exibe os resultados da operação
+    print_matrix("\nMatriz A", matrix_a, matrix_size);
+    print_matrix("\nMatriz B", matrix_b, matrix_size);
+    print_matrix("\nResultado", matrix_result, matrix_size);
+    printf("\n\nOverflow: %s\n", (overflow_flag & 0x1) ? "SIM\n" : "NÃO\n");
 
     close_hw_access();
     return EXIT_SUCCESS;
