@@ -54,8 +54,9 @@ module Coprocessor (
 
     // Módulo sequencial para multiplicação de matrizes
     multiplicacao matrix_multiplier (                      
-        .matrix_a(matrix_a),                  
-        .matrix_b(matrix_b),                  
+        .raw_matrix_a(matrix_a),                  
+        .raw_matrix_b(matrix_b),
+		  .matrix_size(matrix_size),
         .result_out(result_matrix_mult),   // Resultado da multiplicação de matrizes
         .overflow_flag(overflow_matrix_mult) // Sinal de overflow na multiplicação de matrizes
     );

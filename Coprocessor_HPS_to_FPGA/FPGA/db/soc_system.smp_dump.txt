@@ -46,20 +46,6 @@ state.READ_DATA_WAIT 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1
 state.READ_SEND_ISSUE 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
 state.READ_SEND_WAIT 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
 
-State Machine - |ghrd_top|ControlUnit:contronunit_inst|state
-Name state.SENDING state.PROCESSING state.RECEIVING state.IDLE 
-state.IDLE 0 0 0 0 
-state.RECEIVING 0 0 1 1 
-state.PROCESSING 0 1 0 1 
-state.SENDING 1 0 0 1 
-
-State Machine - |ghrd_top|soc_system:u0|soc_system_mm_interconnect_0:mm_interconnect_0|altera_merlin_burst_adapter:onchip_memory2_0_s1_burst_adapter|altera_merlin_burst_adapter_13_1:altera_merlin_burst_adapter_13_1.burst_adapter|state
-Name state.ST_IDLE state.ST_UNCOMP_WR_SUBBURST state.ST_UNCOMP_TRANS state.ST_COMP_TRANS 
-state.ST_IDLE 0 0 0 0 
-state.ST_COMP_TRANS 1 0 0 1 
-state.ST_UNCOMP_TRANS 1 0 1 0 
-state.ST_UNCOMP_WR_SUBBURST 1 1 0 0 
-
 State Machine - |ghrd_top|altera_edge_detector:pulse_debug_reset|state
 Name state.IDLE state.CAPT state.ARM 
 state.IDLE 0 0 0 
@@ -77,6 +63,20 @@ Name state.IDLE state.CAPT state.ARM
 state.IDLE 0 0 0 
 state.ARM 1 0 1 
 state.CAPT 1 1 0 
+
+State Machine - |ghrd_top|ControlUnit:contronunit_inst|state
+Name state.SENDING state.PROCESSING state.RECEIVING state.IDLE 
+state.IDLE 0 0 0 0 
+state.RECEIVING 0 0 1 1 
+state.PROCESSING 0 1 0 1 
+state.SENDING 1 0 0 1 
+
+State Machine - |ghrd_top|soc_system:u0|soc_system_mm_interconnect_0:mm_interconnect_0|altera_merlin_burst_adapter:onchip_memory2_0_s1_burst_adapter|altera_merlin_burst_adapter_13_1:altera_merlin_burst_adapter_13_1.burst_adapter|state
+Name state.ST_IDLE state.ST_UNCOMP_WR_SUBBURST state.ST_UNCOMP_TRANS state.ST_COMP_TRANS 
+state.ST_IDLE 0 0 0 0 
+state.ST_COMP_TRANS 1 0 0 1 
+state.ST_UNCOMP_TRANS 1 0 1 0 
+state.ST_UNCOMP_WR_SUBBURST 1 1 0 0 
 
 State Machine - |ghrd_top|soc_system:u0|soc_system_fpga_only_master:hps_only_master|altera_avalon_packets_to_master:transacto|packets_to_master:p2m|state
 Name state.READ_SEND_WAIT state.READ_SEND_ISSUE state.READ_DATA_WAIT state.READ_CMD_WAIT state.READ_ASSERT state.RETURN_PACKET state.WRITE_WAIT state.GET_WRITE_DATA state.GET_ADDR4 state.GET_ADDR3 state.GET_ADDR2 state.GET_ADDR1 state.GET_SIZE2 state.GET_SIZE1 state.GET_EXTRA state.0000 
