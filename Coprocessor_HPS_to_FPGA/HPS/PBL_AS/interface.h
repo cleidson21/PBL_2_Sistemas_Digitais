@@ -4,9 +4,7 @@
 
 /* ========== CONSTANTES DE STATUS ========== */
 #define HW_SUCCESS      0
-#define HW_INIT_FAIL   -1
-#define HW_SEND_FAIL   -2
-#define HW_READ_FAIL   -3
+#define HW_SEND_FAIL   -1
 
 /* ========== ESTRUTURAS DE DADOS ========== */
 struct Params {
@@ -14,7 +12,7 @@ struct Params {
     const int8_t* b;
     uint32_t opcode;
     uint32_t size;
-    uint32_t scalar;
+    int32_t scalar;
 };
 
 /* ========== DECLARAÇÕES DE FUNÇÕES ASSEMBLY ========== */

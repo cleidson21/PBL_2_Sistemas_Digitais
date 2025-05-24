@@ -1,8 +1,8 @@
 --altddio_out CBX_DECLARE_ALL_CONNECTED_PORTS="OFF" DEVICE_FAMILY="Cyclone V" INVERT_OUTPUT="OFF" POWER_UP_HIGH="OFF" WIDTH=1 datain_h datain_l dataout outclock
---VERSION_BEGIN 23.1 cbx_altddio_out 2024:05:14:17:57:37:SC cbx_cycloneii 2024:05:14:17:57:38:SC cbx_maxii 2024:05:14:17:57:38:SC cbx_mgl 2024:05:14:17:57:46:SC cbx_stratix 2024:05:14:17:57:38:SC cbx_stratixii 2024:05:14:17:57:38:SC cbx_stratixiii 2024:05:14:17:57:38:SC cbx_stratixv 2024:05:14:17:57:38:SC cbx_util_mgl 2024:05:14:17:57:38:SC  VERSION_END
+--VERSION_BEGIN 23.1 cbx_altddio_out 2023:11:29:19:33:05:SC cbx_cycloneii 2023:11:29:19:33:06:SC cbx_maxii 2023:11:29:19:33:06:SC cbx_mgl 2023:11:29:19:43:53:SC cbx_stratix 2023:11:29:19:33:06:SC cbx_stratixii 2023:11:29:19:33:05:SC cbx_stratixiii 2023:11:29:19:33:06:SC cbx_stratixv 2023:11:29:19:33:05:SC cbx_util_mgl 2023:11:29:19:33:06:SC  VERSION_END
 
 
--- Copyright (C) 2024  Intel Corporation. All rights reserved.
+-- Copyright (C) 2023  Intel Corporation. All rights reserved.
 --  Your use of Intel Corporation's design tools, logic functions 
 --  and other software and tools, and any partner logic 
 --  functions, and any output files from any of the foregoing 

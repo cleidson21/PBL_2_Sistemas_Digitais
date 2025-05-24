@@ -178,6 +178,9 @@ loop_send:
     @ Carrega valores das matrizes
     LDRSB r0, [r4, r10]     @ r0 = matrix_a[i], com sinal
     LDRSB r1, [r5, r10]     @ r1 = matrix_b[i], com sinal
+
+    AND r0, r0, #0xFF       @ Remove extensão de sinal, mantém apenas [7:0]
+    AND r1, r1, #0xFF       @ Remove extensão de sinal, mantém apenas [7:0]
     
     LSL r1, r1, #8          @ desloca B para posição [15:8]
     ORR r0, r0, r1          @ combina A e B nos bits [15:0]
